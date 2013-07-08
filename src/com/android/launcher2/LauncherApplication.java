@@ -22,7 +22,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.os.Handler;
-import dalvik.system.VMRuntime;
+
+//import dalvik.system.VMRuntime;
 
 public class LauncherApplication extends Application {
     public LauncherModel mModel;
@@ -30,7 +31,7 @@ public class LauncherApplication extends Application {
 
     @Override
     public void onCreate() {
-        VMRuntime.getRuntime().setMinimumHeapSize(4 * 1024 * 1024);
+        // TODO VMRuntime.getRuntime().setMinimumHeapSize(4 * 1024 * 1024);
 
         super.onCreate();
 
@@ -50,8 +51,7 @@ public class LauncherApplication extends Application {
 
         // Register for changes to the favorites
         ContentResolver resolver = getContentResolver();
-        resolver.registerContentObserver(LauncherSettings.Favorites.CONTENT_URI, true,
-                mFavoritesObserver);
+        resolver.registerContentObserver(LauncherSettings.Favorites.CONTENT_URI, true, mFavoritesObserver);
     }
 
     /**

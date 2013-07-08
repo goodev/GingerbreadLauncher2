@@ -16,35 +16,34 @@
 
 package com.android.launcher2;
 
-import android.widget.CursorAdapter;
-import android.widget.TextView;
-import android.widget.ImageView;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.content.pm.PackageManager;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.LayoutInflater;
-import android.database.Cursor;
-import android.provider.LiveFolders;
-import android.graphics.drawable.Drawable;
-import android.graphics.BitmapFactory;
-import android.graphics.Bitmap;
-
+import java.lang.ref.SoftReference;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.lang.ref.SoftReference;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.provider.LiveFolders;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CursorAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.launcher.R;
 
 class LiveFolderAdapter extends CursorAdapter {
-    private boolean mIsList;
-    private LayoutInflater mInflater;
+    private final boolean mIsList;
+    private final LayoutInflater mInflater;
 
     private final HashMap<String, Drawable> mIcons = new HashMap<String, Drawable>();
-    private final HashMap<Long, SoftReference<Drawable>> mCustomIcons =
-            new HashMap<Long, SoftReference<Drawable>>();
+    private final HashMap<Long, SoftReference<Drawable>> mCustomIcons = new HashMap<Long, SoftReference<Drawable>>();
     private final Launcher mLauncher;
 
     LiveFolderAdapter(Launcher launcher, LiveFolderInfo info, Cursor cursor) {
@@ -57,10 +56,10 @@ class LiveFolderAdapter extends CursorAdapter {
     }
 
     static Cursor query(Context context, LiveFolderInfo info) {
-        return context.getContentResolver().query(info.uri, null, null,
-                null, LiveFolders.NAME + " ASC");
+        return context.getContentResolver().query(info.uri, null, null, null, LiveFolders.NAME + " ASC");
     }
 
+    @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View view;
         final ViewHolder holder = new ViewHolder();
@@ -88,6 +87,7 @@ class LiveFolderAdapter extends CursorAdapter {
         return view;
     }
 
+    @Override
     public void bindView(View view, Context context, Cursor cursor) {
         final ViewHolder holder = (ViewHolder) view.getTag();
 
@@ -101,7 +101,8 @@ class LiveFolderAdapter extends CursorAdapter {
         } else {
             final boolean hasIcon = icon != null;
             holder.icon.setVisibility(hasIcon ? View.VISIBLE : View.GONE);
-            if (hasIcon) holder.icon.setImageDrawable(icon);
+            if (hasIcon)
+                holder.icon.setImageDrawable(icon);
 
             if (holder.descriptionIndex != -1) {
                 final String description = cursor.getString(holder.descriptionIndex);
@@ -109,10 +110,10 @@ class LiveFolderAdapter extends CursorAdapter {
                     holder.description.setText(description);
                     holder.description.setVisibility(View.VISIBLE);
                 } else {
-                    holder.description.setVisibility(View.GONE);                    
+                    holder.description.setVisibility(View.GONE);
                 }
             } else {
-                holder.description.setVisibility(View.GONE);                
+                holder.description.setVisibility(View.GONE);
             }
         }
 
@@ -143,9 +144,10 @@ class LiveFolderAdapter extends CursorAdapter {
 
             if (icon == null) {
                 final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                final Bitmap resampled = Utilities.resampleIconBitmap(bitmap, mContext);
+                final Bitmap resampled = Utilities.resampleIconBitmap(bitmap, context);
                 if (bitmap != resampled) {
-                    // If we got back a different object, we don't need the old one any more.
+                    // If we got back a different object, we don't need the old
+                    // one any more.
                     bitmap.recycle();
                 }
                 icon = new FastBitmapDrawable(resampled);
@@ -157,12 +159,10 @@ class LiveFolderAdapter extends CursorAdapter {
             if (icon == null) {
                 try {
                     final PackageManager packageManager = context.getPackageManager();
-                    Resources resources = packageManager.getResourcesForApplication(
-                            cursor.getString(holder.iconPackageIndex));
-                    final int id = resources.getIdentifier(resource,
-                            null, null);
-                    icon = new FastBitmapDrawable(
-                            Utilities.createIconBitmap(resources.getDrawable(id), mContext));
+                    Resources resources = packageManager.getResourcesForApplication(cursor
+                            .getString(holder.iconPackageIndex));
+                    final int id = resources.getIdentifier(resource, null, null);
+                    icon = new FastBitmapDrawable(Utilities.createIconBitmap(resources.getDrawable(id), context));
                     mIcons.put(resource, icon);
                 } catch (Exception e) {
                     // Ignore

@@ -30,55 +30,56 @@ import com.android.launcher.R;
  */
 public class LauncherAppWidgetHostView extends AppWidgetHostView {
     private boolean mHasPerformedLongPress;
-    
+
     private CheckForLongPress mPendingCheckForLongPress;
-    
-    private LayoutInflater mInflater;
-    
+
+    private final LayoutInflater mInflater;
+
     public LauncherAppWidgetHostView(Context context) {
         super(context);
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
-    
+
     @Override
     protected View getErrorView() {
         return mInflater.inflate(R.layout.appwidget_error, this, false);
     }
 
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         // Consume any touch events for ourselves after longpress is triggered
         if (mHasPerformedLongPress) {
             mHasPerformedLongPress = false;
             return true;
         }
-            
+
         // Watch for longpress events at this level to make sure
         // users can always pick up this widget
         switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                postCheckForLongClick();
-                break;
-            }
-            
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                mHasPerformedLongPress = false;
-                if (mPendingCheckForLongPress != null) {
-                    removeCallbacks(mPendingCheckForLongPress);
-                }
-                break;
+        case MotionEvent.ACTION_DOWN: {
+            postCheckForLongClick();
+            break;
         }
-        
+
+        case MotionEvent.ACTION_UP:
+        case MotionEvent.ACTION_CANCEL:
+            mHasPerformedLongPress = false;
+            if (mPendingCheckForLongPress != null) {
+                removeCallbacks(mPendingCheckForLongPress);
+            }
+            break;
+        }
+
         // Otherwise continue letting touch events fall through to children
         return false;
     }
-    
+
     class CheckForLongPress implements Runnable {
         private int mOriginalWindowAttachCount;
 
+        @Override
         public void run() {
-            if ((mParent != null) && hasWindowFocus()
-                    && mOriginalWindowAttachCount == getWindowAttachCount()
+            if ((getParent() != null) && hasWindowFocus() && mOriginalWindowAttachCount == getWindowAttachCount()
                     && !mHasPerformedLongPress) {
                 if (performLongClick()) {
                     mHasPerformedLongPress = true;

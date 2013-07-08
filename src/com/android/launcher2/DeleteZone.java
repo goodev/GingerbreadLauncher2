@@ -16,22 +16,22 @@
 
 package com.android.launcher2;
 
-import android.widget.ImageView;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.animation.TranslateAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.graphics.RectF;
 import android.graphics.drawable.TransitionDrawable;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
 
 import com.android.launcher.R;
 
@@ -41,7 +41,7 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
     private static final int ANIMATION_DURATION = 200;
 
     private final int[] mLocation = new int[2];
-    
+
     private Launcher mLauncher;
     private boolean mTrashMode;
 
@@ -50,7 +50,7 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
     private Animation mHandleInAnimation;
     private Animation mHandleOutAnimation;
 
-    private int mOrientation;
+    private final int mOrientation;
     private DragController mDragController;
 
     private final RectF mRegion = new RectF();
@@ -79,21 +79,24 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
         mTransition = (TransitionDrawable) getDrawable();
     }
 
-    public boolean acceptDrop(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo) {
+    @Override
+    public boolean acceptDrop(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView,
+            Object dragInfo) {
         return true;
     }
-    
-    public Rect estimateDropLocation(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo, Rect recycle) {
+
+    @Override
+    public Rect estimateDropLocation(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView,
+            Object dragInfo, Rect recycle) {
         return null;
     }
 
-    public void onDrop(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo) {
+    @Override
+    public void onDrop(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView, Object dragInfo) {
         final ItemInfo item = (ItemInfo) dragInfo;
 
-        if (item.container == -1) return;
+        if (item.container == -1)
+            return;
 
         if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) {
             if (item instanceof LauncherAppWidgetInfo) {
@@ -103,13 +106,14 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
             if (source instanceof UserFolder) {
                 final UserFolder userFolder = (UserFolder) source;
                 final UserFolderInfo userFolderInfo = (UserFolderInfo) userFolder.getInfo();
-                // Item must be a ShortcutInfo otherwise it couldn't have been in the folder
+                // Item must be a ShortcutInfo otherwise it couldn't have been
+                // in the folder
                 // in the first place.
-                userFolderInfo.remove((ShortcutInfo)item);
+                userFolderInfo.remove((ShortcutInfo) item);
             }
         }
         if (item instanceof UserFolderInfo) {
-            final UserFolderInfo userFolderInfo = (UserFolderInfo)item;
+            final UserFolderInfo userFolderInfo = (UserFolderInfo) item;
             LauncherModel.deleteUserFolderContentsFromDatabase(mLauncher, userFolderInfo);
             mLauncher.removeFolder(userFolderInfo);
         } else if (item instanceof LauncherAppWidgetInfo) {
@@ -117,9 +121,11 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
             final LauncherAppWidgetHost appWidgetHost = mLauncher.getAppWidgetHost();
             if (appWidgetHost != null) {
                 final int appWidgetId = launcherAppWidgetInfo.appWidgetId;
-                // Deleting an app widget ID is a void call but writes to disk before returning
+                // Deleting an app widget ID is a void call but writes to disk
+                // before returning
                 // to the caller...
                 new Thread("deleteAppWidgetId") {
+                    @Override
                     public void run() {
                         appWidgetHost.deleteAppWidgetId(launcherAppWidgetInfo.appWidgetId);
                     }
@@ -129,22 +135,24 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
         LauncherModel.deleteItemFromDatabase(mLauncher, item);
     }
 
-    public void onDragEnter(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo) {
+    @Override
+    public void onDragEnter(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView,
+            Object dragInfo) {
         mTransition.reverseTransition(TRANSITION_DURATION);
         dragView.setPaint(mTrashPaint);
     }
 
-    public void onDragOver(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo) {
+    @Override
+    public void onDragOver(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView, Object dragInfo) {
     }
 
-    public void onDragExit(DragSource source, int x, int y, int xOffset, int yOffset,
-            DragView dragView, Object dragInfo) {
+    @Override
+    public void onDragExit(DragSource source, int x, int y, int xOffset, int yOffset, DragView dragView, Object dragInfo) {
         mTransition.reverseTransition(TRANSITION_DURATION);
         dragView.setPaint(null);
     }
 
+    @Override
     public void onDragStart(DragSource source, Object info, int dragAction) {
         final ItemInfo item = (ItemInfo) info;
         if (item != null) {
@@ -152,8 +160,8 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
             createAnimations();
             final int[] location = mLocation;
             getLocationOnScreen(location);
-            mRegion.set(location[0], location[1], location[0] + mRight - mLeft,
-                    location[1] + mBottom - mTop);
+            mRegion.set(location[0], location[1], location[0] + getRight() - getLeft(), location[1] + getBottom()
+                    - getTop());
             mDragController.setDeleteRegion(mRegion);
             mTransition.resetTransition();
             startAnimation(mInAnimation);
@@ -162,6 +170,7 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
         }
     }
 
+    @Override
     public void onDragEnd() {
         if (mTrashMode) {
             mTrashMode = false;
@@ -179,13 +188,11 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
             animationSet.setInterpolator(new AccelerateInterpolator());
             animationSet.addAnimation(new AlphaAnimation(0.0f, 1.0f));
             if (mOrientation == ORIENTATION_HORIZONTAL) {
-                animationSet.addAnimation(new TranslateAnimation(Animation.ABSOLUTE, 0.0f,
-                        Animation.ABSOLUTE, 0.0f, Animation.RELATIVE_TO_SELF, 1.0f,
-                        Animation.RELATIVE_TO_SELF, 0.0f));
+                animationSet.addAnimation(new TranslateAnimation(Animation.ABSOLUTE, 0.0f, Animation.ABSOLUTE, 0.0f,
+                        Animation.RELATIVE_TO_SELF, 1.0f, Animation.RELATIVE_TO_SELF, 0.0f));
             } else {
-                animationSet.addAnimation(new TranslateAnimation(Animation.RELATIVE_TO_SELF,
-                        1.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.ABSOLUTE, 0.0f,
-                        Animation.ABSOLUTE, 0.0f));
+                animationSet.addAnimation(new TranslateAnimation(Animation.RELATIVE_TO_SELF, 1.0f,
+                        Animation.RELATIVE_TO_SELF, 0.0f, Animation.ABSOLUTE, 0.0f, Animation.ABSOLUTE, 0.0f));
             }
             animationSet.setDuration(ANIMATION_DURATION);
         }
@@ -199,13 +206,11 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
             animationSet.setInterpolator(new AccelerateInterpolator());
             animationSet.addAnimation(new AlphaAnimation(1.0f, 0.0f));
             if (mOrientation == ORIENTATION_HORIZONTAL) {
-                animationSet.addAnimation(new FastTranslateAnimation(Animation.ABSOLUTE, 0.0f,
-                        Animation.ABSOLUTE, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f,
-                        Animation.RELATIVE_TO_SELF, 1.0f));
+                animationSet.addAnimation(new FastTranslateAnimation(Animation.ABSOLUTE, 0.0f, Animation.ABSOLUTE,
+                        0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 1.0f));
             } else {
-                animationSet.addAnimation(new FastTranslateAnimation(Animation.RELATIVE_TO_SELF,
-                        0.0f, Animation.RELATIVE_TO_SELF, 1.0f, Animation.ABSOLUTE, 0.0f,
-                        Animation.ABSOLUTE, 0.0f));
+                animationSet.addAnimation(new FastTranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+                        Animation.RELATIVE_TO_SELF, 1.0f, Animation.ABSOLUTE, 0.0f, Animation.ABSOLUTE, 0.0f));
             }
             animationSet.setDuration(ANIMATION_DURATION);
         }
@@ -229,10 +234,9 @@ public class DeleteZone extends ImageView implements DropTarget, DragController.
     }
 
     private static class FastTranslateAnimation extends TranslateAnimation {
-        public FastTranslateAnimation(int fromXType, float fromXValue, int toXType, float toXValue,
-                int fromYType, float fromYValue, int toYType, float toYValue) {
-            super(fromXType, fromXValue, toXType, toXValue,
-                    fromYType, fromYValue, toYType, toYValue);
+        public FastTranslateAnimation(int fromXType, float fromXValue, int toXType, float toXValue, int fromYType,
+                float fromYValue, int toYType, float toYValue) {
+            super(fromXType, fromXValue, toXType, toXValue, fromYType, fromYValue, toYType, toYValue);
         }
 
         @Override

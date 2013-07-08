@@ -16,21 +16,21 @@
 
 package com.android.launcher2;
 
-import android.widget.TextView;
 import android.content.Context;
-import android.util.AttributeSet;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.text.Layout;
+import android.util.AttributeSet;
+import android.widget.TextView;
 
 import com.android.launcher.R;
 
 /**
- * TextView that draws a bubble behind the text. We cannot use a LineBackgroundSpan
- * because we want to make the bubble taller than the text and TextView's clip is
- * too aggressive.
+ * TextView that draws a bubble behind the text. We cannot use a
+ * LineBackgroundSpan because we want to make the bubble taller than the text
+ * and TextView's clip is too aggressive.
  */
 public class BubbleTextView extends TextView {
     static final float CORNER_RADIUS = 8.0f;
@@ -72,13 +72,13 @@ public class BubbleTextView extends TextView {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         mCornerRadius = CORNER_RADIUS * scale;
         mPaddingH = PADDING_H * scale;
-        //noinspection PointlessArithmeticExpression
+        // noinspection PointlessArithmeticExpression
         mPaddingV = PADDING_V * scale;
     }
 
     @Override
     protected boolean setFrame(int left, int top, int right, int bottom) {
-        if (mLeft != left || mRight != right || mTop != top || mBottom != bottom) {
+        if (getLeft() != left || getRight() != right || getTop() != top || getBottom() != bottom) {
             mBackgroundSizeChanged = true;
         }
         return super.setFrame(left, top, right, bottom);
@@ -102,11 +102,11 @@ public class BubbleTextView extends TextView {
     public void draw(Canvas canvas) {
         final Drawable background = mBackground;
         if (background != null) {
-            final int scrollX = mScrollX;
-            final int scrollY = mScrollY;
+            final int scrollX = getScrollX();
+            final int scrollY = getScrollY();
 
             if (mBackgroundSizeChanged) {
-                background.setBounds(0, 0,  mRight - mLeft, mBottom - mTop);
+                background.setBounds(0, 0, getRight() - getLeft(), getBottom() - getTop());
                 mBackgroundSizeChanged = false;
             }
 
@@ -124,10 +124,9 @@ public class BubbleTextView extends TextView {
         final int left = getCompoundPaddingLeft();
         final int top = getExtendedPaddingTop();
 
-        rect.set(left + layout.getLineLeft(0) - mPaddingH,
-                top + layout.getLineTop(0) -  mPaddingV,
-                Math.min(left + layout.getLineRight(0) + mPaddingH, mScrollX + mRight - mLeft),
-                top + layout.getLineBottom(0) + mPaddingV);
+        rect.set(left + layout.getLineLeft(0) - mPaddingH, top + layout.getLineTop(0) - mPaddingV,
+                Math.min(left + layout.getLineRight(0) + mPaddingH, getScrollX() + getRight() - getLeft()), top
+                        + layout.getLineBottom(0) + mPaddingV);
         canvas.drawRoundRect(rect, mCornerRadius, mCornerRadius, mPaint);
 
         super.draw(canvas);

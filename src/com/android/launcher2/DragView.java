@@ -14,61 +14,61 @@
  * limitations under the License.
  */
 
-
 package com.android.launcher2;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.os.IBinder;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.KeyEvent;
 import android.view.WindowManager;
-import android.view.WindowManagerImpl;
 
 public class DragView extends View implements TweenCallback {
-    // Number of pixels to add to the dragged item for scaling.  Should be even for pixel alignment.
+    // Number of pixels to add to the dragged item for scaling. Should be even
+    // for pixel alignment.
     private static final int DRAG_SCALE = 40;
 
-    private Bitmap mBitmap;
+    private final Bitmap mBitmap;
     private Paint mPaint;
-    private int mRegistrationX;
-    private int mRegistrationY;
+    private final int mRegistrationX;
+    private final int mRegistrationY;
 
     SymmetricalLinearTween mTween;
     private float mScale;
     private float mAnimationScale = 1.0f;
 
     private WindowManager.LayoutParams mLayoutParams;
-    private WindowManager mWindowManager;
+    private final WindowManager mWindowManager;
 
     /**
      * Construct the drag view.
      * <p>
-     * The registration point is the point inside our view that the touch events should
-     * be centered upon.
-     *
-     * @param context A context
-     * @param bitmap The view that we're dragging around.  We scale it up when we draw it.
-     * @param registrationX The x coordinate of the registration point.
-     * @param registrationY The y coordinate of the registration point.
+     * The registration point is the point inside our view that the touch events
+     * should be centered upon.
+     * 
+     * @param context
+     *            A context
+     * @param bitmap
+     *            The view that we're dragging around. We scale it up when we
+     *            draw it.
+     * @param registrationX
+     *            The x coordinate of the registration point.
+     * @param registrationY
+     *            The y coordinate of the registration point.
      */
-    public DragView(Context context, Bitmap bitmap, int registrationX, int registrationY,
-            int left, int top, int width, int height) {
+    public DragView(Context context, Bitmap bitmap, int registrationX, int registrationY, int left, int top, int width,
+            int height) {
         super(context);
 
-        mWindowManager = WindowManagerImpl.getDefault();
-        
-        mTween = new SymmetricalLinearTween(false, 110 /*ms duration*/, this);
+        // mWindowManager = WindowManagerImpl.getDefault();
+        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        mTween = new SymmetricalLinearTween(false, 110 /* ms duration */, this);
 
         Matrix scale = new Matrix();
         float scaleFactor = width;
@@ -99,7 +99,7 @@ public class DragView extends View implements TweenCallback {
         float scale = mAnimationScale;
         if (scale < 0.999f) { // allow for some float error
             float width = mBitmap.getWidth();
-            float offset = (width-(width*scale))/2;
+            float offset = (width - (width * scale)) / 2;
             canvas.translate(offset, offset);
             canvas.scale(scale, scale);
         }
@@ -112,14 +112,17 @@ public class DragView extends View implements TweenCallback {
         mBitmap.recycle();
     }
 
+    @Override
     public void onTweenValueChanged(float value, float oldValue) {
-        mAnimationScale = (1.0f+((mScale-1.0f)*value))/mScale;
+        mAnimationScale = (1.0f + ((mScale - 1.0f) * value)) / mScale;
         invalidate();
     }
 
+    @Override
     public void onTweenStarted() {
     }
 
+    @Override
     public void onTweenFinished() {
     }
 
@@ -130,10 +133,13 @@ public class DragView extends View implements TweenCallback {
 
     /**
      * Create a window containing this view and show it.
-     *
-     * @param windowToken obtained from v.getWindowToken() from one of your views
-     * @param touchX the x coordinate the user touched in screen coordinates
-     * @param touchY the y coordinate the user touched in screen coordinates
+     * 
+     * @param windowToken
+     *            obtained from v.getWindowToken() from one of your views
+     * @param touchX
+     *            the x coordinate the user touched in screen coordinates
+     * @param touchY
+     *            the y coordinate the user touched in screen coordinates
      */
     public void show(IBinder windowToken, int touchX, int touchY) {
         WindowManager.LayoutParams lp;
@@ -141,16 +147,12 @@ public class DragView extends View implements TweenCallback {
 
         pixelFormat = PixelFormat.TRANSLUCENT;
 
-        lp = new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                touchX-mRegistrationX, touchY-mRegistrationY,
-                WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-                    /*| WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM*/,
-                pixelFormat);
-//        lp.token = mStatusBarView.getWindowToken();
+        lp = new WindowManager.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                touchX - mRegistrationX, touchY - mRegistrationY,
+                WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                /* | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM */, pixelFormat);
+        // lp.token = mStatusBarView.getWindowToken();
         lp.gravity = Gravity.LEFT | Gravity.TOP;
         lp.token = windowToken;
         lp.setTitle("DragView");
@@ -158,15 +160,17 @@ public class DragView extends View implements TweenCallback {
 
         mWindowManager.addView(this, lp);
 
-        mAnimationScale = 1.0f/mScale;
+        mAnimationScale = 1.0f / mScale;
         mTween.start(true);
     }
-    
+
     /**
      * Move the window containing this view.
-     *
-     * @param touchX the x coordinate the user touched in screen coordinates
-     * @param touchY the y coordinate the user touched in screen coordinates
+     * 
+     * @param touchX
+     *            the x coordinate the user touched in screen coordinates
+     * @param touchY
+     *            the y coordinate the user touched in screen coordinates
      */
     void move(int touchX, int touchY) {
         WindowManager.LayoutParams lp = mLayoutParams;
@@ -179,4 +183,3 @@ public class DragView extends View implements TweenCallback {
         mWindowManager.removeView(this);
     }
 }
-
